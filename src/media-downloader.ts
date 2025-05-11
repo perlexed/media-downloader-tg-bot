@@ -13,13 +13,20 @@ export default function (downloadUrl: string): Promise<string> {
 
     const ytDlpOptions = [
         downloadUrl,
+        // Depending on whether ffmpeg is available the format may be different
+        // Setting this format should prevent this behavior
+        '-f', 'best/bestvideo+bestaudio',
         '-o', outputFilename,
         '-P', downloadDir,
     ];
 
+    const YTDlpWrapInstance = process.env.YTDLP_PATH
+        ? new YTDlpWrap(process.env.YTDLP_PATH)
+        : new YTDlpWrap();
+
     return new Promise<string>((resolve, reject) => {
         try {
-            const ytDlpEventEmitter = (new YTDlpWrap())
+            const ytDlpEventEmitter = YTDlpWrapInstance
                 .exec(ytDlpOptions)
                 .on('error', (error) => {
                     reject(error);

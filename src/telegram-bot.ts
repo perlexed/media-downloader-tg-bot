@@ -39,7 +39,8 @@ export default function (bot: Telegraf) {
                 const downloadedFileInput = Input.fromLocalFile(filePath);
                 return ctx.replyWithVideo(downloadedFileInput);
             })
-            .catch(() => {
+            .catch(error => {
+                console.error(error);
                 ctx.reply('Error while downloading the file');
             });
     });
