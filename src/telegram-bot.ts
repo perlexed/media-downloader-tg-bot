@@ -36,6 +36,8 @@ export default function (bot: Telegraf) {
 
         downloadPromise
             .then(filePath => {
+                ctx.reply('Media downloaded, sending it to telegram');
+
                 const downloadedFileInput = Input.fromLocalFile(filePath);
                 return ctx.replyWithVideo(downloadedFileInput);
             })
