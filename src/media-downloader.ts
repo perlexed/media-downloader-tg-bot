@@ -11,6 +11,10 @@ export default function (downloadUrl: string): Promise<string> {
         process.env.DOWNLOAD_DIR as string,
     );
 
+    const ytDlpCookiesParam = process.env.YTDLP_COOKIES_PATH
+        ? ['--cookies', process.env.YTDLP_COOKIES_PATH]
+        : []
+
     const ytDlpOptions = [
         downloadUrl,
         // Depending on whether ffmpeg is available the format may be different
@@ -18,6 +22,7 @@ export default function (downloadUrl: string): Promise<string> {
         '-f', 'best/bestvideo+bestaudio',
         '-o', outputFilename,
         '-P', downloadDir,
+        ...ytDlpCookiesParam,
     ];
 
     const YTDlpWrapInstance = process.env.YTDLP_PATH
