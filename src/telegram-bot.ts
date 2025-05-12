@@ -1,15 +1,25 @@
 import {Input, Telegraf} from "telegraf";
+import {message} from 'telegraf/filters';
 import downloadMedia from "./media-downloader";
 
 export default function (bot: Telegraf) {
     bot.start((ctx) => ctx.reply('Welcome to media downloader bot'));
     bot.help((ctx) => ctx.reply('Send me a URL to media (instagram, x.com, ...), and I\'ll download it and send it back as a video'));
 
-    bot.on('text', (ctx) => {
+    bot.on(message('text'), (ctx) => {
         const messageText = ctx.message.text;
 
         if (!messageText) {
-            ctx.reply("No text was provided");
+            return;
+        }
+
+        const isPrivateChat = ctx.message.chat.type === 'private';
+        const isBotMentioned = ctx.message.entities?.some(entity =>
+            entity.type === 'mention' &&
+            messageText.includes(`@${ctx.botInfo.username}`)
+        );
+
+        if (!isPrivateChat && !isBotMentioned) {
             return;
         }
 
