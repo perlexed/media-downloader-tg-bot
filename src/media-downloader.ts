@@ -2,8 +2,21 @@ import {join} from 'path';
 import {randomUUID} from 'crypto';
 import YTDlpWrap from 'yt-dlp-wrap';
 
+const getYtDlpWrap = () => {
+    return process.env.YTDLP_PATH
+        ? new YTDlpWrap(process.env.YTDLP_PATH)
+        : new YTDlpWrap();
+};
 
-export default function (downloadUrl: string): Promise<string> {
+export const getVideoInfo = async (videoUrl: string): Promise<any|null> => {
+    try {
+        return await getYtDlpWrap().getVideoInfo(videoUrl)
+    } catch (error) {
+        return null;
+    }
+};
+
+export const downloadMedia = (downloadUrl: string): Promise<string> => {
     const outputFilename = `${randomUUID()}.mp4`;
     const isVerbose = process.env.VERBOSE && Boolean(parseInt(process.env.VERBOSE, 10));
     const downloadDir = join(
@@ -25,13 +38,9 @@ export default function (downloadUrl: string): Promise<string> {
         ...ytDlpCookiesParam,
     ];
 
-    const YTDlpWrapInstance = process.env.YTDLP_PATH
-        ? new YTDlpWrap(process.env.YTDLP_PATH)
-        : new YTDlpWrap();
-
     return new Promise<string>((resolve, reject) => {
         try {
-            const ytDlpEventEmitter = YTDlpWrapInstance
+            const ytDlpEventEmitter = getYtDlpWrap()
                 .exec(ytDlpOptions)
                 .on('error', (error) => {
                     reject(error);
@@ -52,4 +61,4 @@ export default function (downloadUrl: string): Promise<string> {
             reject(e);
         }
     });
-}
+};

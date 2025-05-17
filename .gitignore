@@ -3,3 +3,4 @@ downloaded
 node_modules
 
 .env
+cache.txt
