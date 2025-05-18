@@ -8,9 +8,26 @@ const getYtDlpWrap = () => {
         : new YTDlpWrap();
 };
 
+const getCommonYtDlpParams = () => {
+    const ytDlpCookiesParam = process.env.YTDLP_COOKIES_PATH
+        ? ['--cookies', process.env.YTDLP_COOKIES_PATH]
+        : []
+
+    return [
+        // Depending on whether ffmpeg is available the format may be different
+        // Setting this format should prevent this behavior
+        '-f', 'best/bestvideo+bestaudio',
+        ...ytDlpCookiesParam,
+    ];
+};
+
 export const getVideoInfo = async (videoUrl: string): Promise<any|null> => {
     try {
-        return await getYtDlpWrap().getVideoInfo(videoUrl)
+        return await getYtDlpWrap()
+            .getVideoInfo([
+                videoUrl,
+                ...getCommonYtDlpParams(),
+            ])
     } catch (error) {
         return null;
     }
@@ -24,18 +41,11 @@ export const downloadMedia = (downloadUrl: string): Promise<string> => {
         process.env.DOWNLOAD_DIR as string,
     );
 
-    const ytDlpCookiesParam = process.env.YTDLP_COOKIES_PATH
-        ? ['--cookies', process.env.YTDLP_COOKIES_PATH]
-        : []
-
     const ytDlpOptions = [
         downloadUrl,
-        // Depending on whether ffmpeg is available the format may be different
-        // Setting this format should prevent this behavior
-        '-f', 'best/bestvideo+bestaudio',
         '-o', outputFilename,
         '-P', downloadDir,
-        ...ytDlpCookiesParam,
+        ...getCommonYtDlpParams(),
     ];
 
     return new Promise<string>((resolve, reject) => {
