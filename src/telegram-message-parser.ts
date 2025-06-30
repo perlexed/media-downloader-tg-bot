@@ -83,16 +83,19 @@ export const processTelegramMessage = async (ctx:  NarrowedContext<Context<Updat
 
     const {videoFile, localFilePath} = videoInput;
 
-    await ctx.reply('Media downloaded, sending it to telegram');
-    const telegramUploadResult = await ctx.replyWithVideo(videoFile);
-
-    unlinkSync(localFilePath);
-
-    if (cacheKeyData !== null) {
-        VideoCacheHelper.instance.saveTelegramVideoIdToCache(
-            cacheKeyData.videoId,
-            cacheKeyData.videoExtractor,
-            telegramUploadResult.video.file_id,
-        );
-    }
+    return ctx
+        .reply('Media downloaded, sending it to telegram')
+        .then(() => ctx.replyWithVideo(videoFile))
+        .then(telegramUploadResult => {
+            if (cacheKeyData !== null) {
+                VideoCacheHelper.instance.saveTelegramVideoIdToCache(
+                    cacheKeyData.videoId,
+                    cacheKeyData.videoExtractor,
+                    telegramUploadResult.video.file_id,
+                );
+            }
+        })
+        .finally(() => {
+            unlinkSync(localFilePath);
+        });
 };
