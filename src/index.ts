@@ -32,7 +32,13 @@ const telegramBot = new Telegraf(process.env.BOT_TOKEN)
             await processTelegramMessage(ctx);
         } catch (error) {
             console.error(error);
-            ctx.reply('Error while downloading the file');
+
+            // Mark telegram upload limit
+            const errorMessage = error && typeof error === 'object' && (error as any)?.response?.error_code === 413
+                ? 'Video too large, must be <50 Mb'
+                : 'Error while downloading the file';
+
+            ctx.reply(errorMessage);
         }
     })
     .catch((err, ctx) => {
