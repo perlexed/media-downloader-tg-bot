@@ -1,11 +1,9 @@
-import {Context, Input} from "telegraf";
+import {Input} from "telegraf";
 import {unlinkSync} from "fs";
 import {InputFile} from "telegraf/src/core/types/typegram";
-import {NarrowedContext} from "telegraf/typings/context";
-import {Message} from '@telegraf/types/message';
-import {Update} from '@telegraf/types/update';
-import {downloadMedia, getVideoInfo} from "./media-downloader";
-import {VideoCacheHelper} from "./video-cache-helper";
+import {downloadMedia, getVideoInfo} from "../media-downloader";
+import {VideoCacheHelper} from "../video-cache-helper";
+import {BotNarrowedContext} from "./telegram-bot";
 
 // Either it's downloaded file with file path, or a telegram video id string
 type VideoToUpload = {videoFile: InputFile, localFilePath: string} | string;
@@ -35,7 +33,7 @@ const getVideoToUpload = async (downloadUrl: string): VideoUploadResult => {
     ];
 };
 
-export const processTelegramMessage = async (ctx:  NarrowedContext<Context<Update>, Update.MessageUpdate<Record<"text", {}> & Message.TextMessage>>) => {
+export const processTelegramMessage = async (ctx: BotNarrowedContext) => {
     const messageText = ctx.message.text;
 
     if (!messageText) {
