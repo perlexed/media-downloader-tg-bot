@@ -11,6 +11,7 @@ export interface BotNarrowedContext {
     botInfo: UserFromGetMe,
     reply: (messageText: string) => Promise<Message.TextMessage>,
     replyWithVideo: (videoInfo: string | InputFile) => Promise<Message.VideoMessage>,
+    sendError: (errorText: string) => Promise<Message.TextMessage | null>,
 }
 
 
@@ -38,8 +39,40 @@ const onTelegramMessageHandler = async (ctx: BotNarrowedContext): Promise<any> =
             ? 'Video too large, must be <50 Mb'
             : 'Error while downloading the file';
 
+        const shouldErrorBeReported = !isTelegramTooLargeError(error);
+
+        if (shouldErrorBeReported) {
+            await ctx.sendError(error as string);
+        }
+
         return ctx.reply(errorMessage);
     }
+};
+
+const sendError = (errorText: string, ctx: any) => {
+    if (!process.env.REPORT_CHAT_ID) {
+        return Promise.resolve(null);
+    }
+
+    const reportChatId = process.env.REPORT_CHAT_ID;
+    const markdownV2ErrorText = 'message text: '
+        + ctx.message.text
+            .replaceAll('.', '\\.')
+            .replaceAll('-', '\\-')
+            .replaceAll('=', '\\=')
+        + '\n\n'
+        + '```\n' + errorText + '\n```';
+
+    return ctx.telegram.sendMessage(
+        reportChatId,
+        markdownV2ErrorText,
+        {parse_mode: 'MarkdownV2'},
+    ).catch(() => {
+        return ctx.telegram.sendMessage(
+            reportChatId,
+            'message text: ' + ctx.message.text + '\n\n' + '```\n' + errorText + '\n```',
+        );
+    });
 };
 
 const createBot = (botToken: string) => (new Telegraf(botToken)
@@ -50,8 +83,9 @@ const createBot = (botToken: string) => (new Telegraf(botToken)
         async (ctx) => onTelegramMessageHandler({
             message: ctx.message,
             botInfo: ctx.botInfo,
-            reply: ctx.reply,
-            replyWithVideo: ctx.replyWithVideo,
+            reply: ctx.reply.bind(ctx),
+            replyWithVideo: ctx.replyWithVideo.bind(ctx),
+            sendError: (errorText) => sendError(errorText, ctx),
         }),
     )
     .catch((err, ctx) => {
