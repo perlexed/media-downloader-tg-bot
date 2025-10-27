@@ -4,6 +4,7 @@ import {Message} from "@telegraf/types/message";
 import {processTelegramMessage} from "./message-parser";
 import {message} from "telegraf/filters";
 import {InputFile} from "telegraf/src/core/types/typegram";
+import {TelegramEmoji} from "@telegraf/types/manage";
 
 
 export interface BotNarrowedContext {
@@ -12,6 +13,7 @@ export interface BotNarrowedContext {
     reply: (messageText: string) => Promise<Message.TextMessage>,
     replyWithVideo: (videoInfo: string | InputFile) => Promise<Message.VideoMessage>,
     sendError: (errorText: string) => Promise<Message.TextMessage | null>,
+    setReaction: (emoji: TelegramEmoji) => Promise<true>,
 }
 
 
@@ -44,6 +46,8 @@ const onTelegramMessageHandler = async (ctx: BotNarrowedContext): Promise<any> =
         if (shouldErrorBeReported) {
             await ctx.sendError(error as string);
         }
+
+        await ctx.setReaction('🌚');
 
         return ctx.reply(errorMessage);
     }
@@ -86,6 +90,14 @@ const createBot = (botToken: string) => (new Telegraf(botToken)
             reply: ctx.reply.bind(ctx),
             replyWithVideo: ctx.replyWithVideo.bind(ctx),
             sendError: (errorText) => sendError(errorText, ctx),
+            setReaction: (emoji: TelegramEmoji) => ctx.telegram.setMessageReaction(
+                ctx.message.chat.id,
+                ctx.message.message_id,
+                [{
+                    type: 'emoji',
+                    emoji: emoji,
+                }],
+            ),
         }),
     )
     .catch((err, ctx) => {

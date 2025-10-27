@@ -50,6 +50,8 @@ export const processTelegramMessage = async (ctx: BotNarrowedContext) => {
         return;
     }
 
+    await ctx.setReaction('👌');
+
     // E.g. 'https://google.com'
     const httpsUrlRegex = new RegExp(
         'https?:\\/\\/(?:www\\.)?[^\\s/$.?#]{1,256}\\.[^\\s]{1,6}(?:[^\\s?#]*)?(?:\\?[^\\s#]*)?(?:#\\S*)?',
@@ -60,6 +62,8 @@ export const processTelegramMessage = async (ctx: BotNarrowedContext) => {
 
     if (!urls) {
         await ctx.reply("Given text has no URL to download");
+        await ctx.setReaction('🌚');
+
         return;
     }
 
@@ -93,6 +97,7 @@ export const processTelegramMessage = async (ctx: BotNarrowedContext) => {
                 );
             }
         })
+        .then(() => ctx.setReaction('🫡'))
         .finally(() => {
             unlinkSync(localFilePath);
         });
