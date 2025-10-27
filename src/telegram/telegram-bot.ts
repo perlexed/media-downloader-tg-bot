@@ -32,7 +32,9 @@ const isTelegramTooLargeError = (error: unknown) => error && typeof error === 'o
 
 const onTelegramMessageHandler = async (ctx: BotNarrowedContext): Promise<any> => {
     try {
-        return await processTelegramMessage(ctx);
+        await processTelegramMessage(ctx);
+        await ctx.setReaction('🫡');
+        return;
     } catch (error) {
         console.error(error);
 

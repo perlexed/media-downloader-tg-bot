@@ -97,7 +97,6 @@ export const processTelegramMessage = async (ctx: BotNarrowedContext) => {
                 );
             }
         })
-        .then(() => ctx.setReaction('🫡'))
         .finally(() => {
             unlinkSync(localFilePath);
         });
