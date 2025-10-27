@@ -81,7 +81,7 @@ const sendError = (errorText: string, ctx: any) => {
     });
 };
 
-const createBot = (botToken: string) => (new Telegraf(botToken)
+const createBot = (botToken: string, apiUrl: string|null) => (new Telegraf(botToken, apiUrl ? {telegram: {apiRoot: apiUrl}} : {})
     .start((ctx) => ctx.reply('Welcome to media downloader bot'))
     .help((ctx) => ctx.reply('Send me a URL to media (instagram, x.com, ...), and I\'ll download it and send it back as a video'))
     .on(
@@ -110,6 +110,7 @@ const createBot = (botToken: string) => (new Telegraf(botToken)
 
 export const startTelegramBot = () => {
     const botToken = process.env.BOT_TOKEN;
+    const botApiUrl = process.env.BOT_API_URL || null;
 
     if (
         !botToken
@@ -118,7 +119,7 @@ export const startTelegramBot = () => {
         throw new Error('BOT_TOKEN and DOWNLOAD_DIR environment variables must be set');
     }
 
-    const bot = createBot(botToken);
+    const bot = createBot(botToken, botApiUrl);
 
     bot
         .launch(getLaunchParams())
